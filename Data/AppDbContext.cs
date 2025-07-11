@@ -1,4 +1,5 @@
 ﻿using BlogPostApplication.Models;
+using BlogPostSimpleApp.Models;
 using Microsoft.EntityFrameworkCore;
 public class AppDbContext : DbContext
 {
@@ -8,14 +9,46 @@ public class AppDbContext : DbContext
     public DbSet<BlogType> BlogTypes { get; set; }
     public DbSet<PostType> PostTypes { get; set; }
 
+    public DbSet<User> Users { get; set; }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=BlogDb;Trusted_Connection=True;");
 
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Post>(entity =>
+        {
+            entity.HasOne(p => p.PostType)
+            .WithMany(pt => pt.Posts)
+            .HasForeignKey(p => p.PostTypeId);
+        }
+         );
 
+        modelBuilder.Entity<Blog>(entity =>
+        {
+            entity.HasOne(b => b.BlogType)
+                  .WithMany(bt => bt.Blogs)
+                  .HasForeignKey(b => b.BlogTypeId);
+        });
+        modelBuilder.Entity<Post>(entity =>
+        {
+            entity.HasOne(p => p.Blog)
+                  .WithMany(b => b.Posts)
+                  .HasForeignKey(p => p.BlogId);
+        });
+        modelBuilder.Entity<Post>(entity =>
+        {
+            entity.HasOne(p => p.User)
+                  .WithMany(u => u.Posts)
+                  .HasForeignKey(p => p.UserId);
+        });
+
+    }
 
 }
+
 
 
     
