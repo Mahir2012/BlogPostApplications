@@ -1,5 +1,4 @@
-﻿
-using BlogPostApplication.Models;
+﻿using BlogPostApplication.Models;
 using BlogPostSimpleApp.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -15,39 +14,54 @@ class Program
         
         var users = new List<User>
         {
-           
             new User { UserName = "Mahir", Email = "Mahir@gmail.com", PhoneNumber = "368-992-0987" },
             new User { UserName = "Riyaz", Email = "Riyaz@gmail.com", PhoneNumber = "983-223-4567" },
             new User { UserName = "Aaftab", Email = "Aaftab@gmail.com", PhoneNumber = "567-987-9876" }
         };
 
-        context.Users.AddRange(users);
-       context.SaveChanges();
+     
+        var userEmails = users.Select(u => u.Email).ToList();
+        var existingUsers = context.Users
+            .Where(u => userEmails.Contains(u.Email))
+            .Select(u => u.Email)
+            .ToList();
+
+        var newUsers = users.Where(u => !existingUsers.Contains(u.Email)).ToList();
+        context.Users.AddRange(newUsers);
+        context.SaveChanges();
 
        
         Console.Write("Enter blog URL: ");
         var url = Console.ReadLine();
+
         var blog = new Blog { Url = url };
         context.Blogs.Add(blog);
         context.SaveChanges();
 
+       
+        var targetEmails = new[] { "Mahir@gmail.com", "Riyaz@gmail.com", "Aaftab@gmail.com" };
+        var selectedUsers = context.Users
+            .Where(u => targetEmails.Contains(u.Email))
+            .ToList();
 
-
-        var user = context.Users.First();
-        var post = new Post
+     
+        var posts = new List<Post>();
+        foreach (var user in selectedUsers)
         {
-            Title = "Hi There",
-            Content = "This is my first post!",
-            BlogId = blog.BlogId,
-            UserId = user.UserId,
-            PostTypeId = 1 
-        };
+            posts.Add(new Post
+            {
+                Title = $"Welcome Post by {user.UserName}",
+                Content = $"Hi, this is {user.UserName}'s first blog post!",
+                BlogId = blog.BlogId,
+                UserId = user.UserId,
+                PostTypeId = 1
+            });
+        }
 
-        context.Posts.Add(post);
+        context.Posts.AddRange(posts);
         context.SaveChanges();
 
-
-
+        
         var blogs = context.Blogs
                            .Include(b => b.Posts)
                            .ThenInclude(p => p.User)
