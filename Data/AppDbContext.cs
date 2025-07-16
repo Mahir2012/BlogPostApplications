@@ -11,6 +11,8 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
 
+    public DbSet<Status> Statuses { get; set; }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=BlogDb;Trusted_Connection=True;");
@@ -45,10 +47,17 @@ public class AppDbContext : DbContext
                   .HasForeignKey(p => p.UserId);
         });
 
+        modelBuilder.Entity<Blog>(entity =>
+        {
+            entity.HasOne(b => b.Status)
+                  .WithMany(s => s.Blogs)
+                  .HasForeignKey(b => b.StatusId);
+        });
+
     }
 
 }
 
 
 
-    
+   

@@ -16,6 +16,9 @@ namespace BlogPostApplication.Models
         public List<Post> Posts { get; set; }
         public int BlogTypeId { get; set; }
         public BlogType BlogType { get; set; }
+
+        public int StatusId { get; set; }       // Foreign key
+        public Status Status { get; set; }      // Navigation property
     }
 
 }
